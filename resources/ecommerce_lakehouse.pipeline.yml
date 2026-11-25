@@ -1,0 +1,20 @@
+resources:
+  pipelines:
+    ecommerce_lakehouse:
+      name: ecommerce_lakehouse
+      catalog: ${var.catalog}
+      schema: ${resources.schemas.ecommerce.name}
+
+      serverless: true          # Free Edition is serverless-only
+      continuous: false         # triggered runs (the job decides when)
+      photon: true
+      channel: CURRENT
+
+      root_path: ../src/pipelines/ecommerce_lakehouse
+      libraries:
+        - glob:
+            include: ../src/pipelines/ecommerce_lakehouse/transformations/**
+
+      configuration:
+        # Read in the transformations with spark.conf.get("landing_path")
+        landing_path: /Volumes/${var.catalog}/${resources.schemas.ecommerce.name}/${resources.volumes.landing.name}

@@ -1,0 +1,32 @@
+# Darunz E-commerce Lakehouse
+# Declarative Automation Bundle (DAB) — deploys the schema, landing volume,
+# the Lakeflow declarative pipeline and the orchestration job.
+
+bundle:
+  name: darunz_ecommerce_lakehouse
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog to deploy into (Free Edition ships with `workspace`).
+    default: workspace
+  schema:
+    description: Schema that holds every Bronze / Silver / Gold table.
+    default: ecommerce
+
+targets:
+  dev:
+    # Development mode prefixes resource names with your user name and
+    # pauses schedules, so you can experiment safely.
+    mode: development
+    default: true
+    workspace:
+      host: https://<your-workspace>.cloud.databricks.com   # TODO: your Free Edition URL
+
+  prod:
+    mode: production
+    workspace:
+      host: https://<your-workspace>.cloud.databricks.com   # TODO: your Free Edition URL
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}

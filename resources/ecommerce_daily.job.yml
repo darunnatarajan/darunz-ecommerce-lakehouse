@@ -1,0 +1,27 @@
+# Orchestration: generate a new batch of raw files, then refresh the pipeline.
+# Runs on serverless (no cluster config needed). In dev mode the schedule is paused.
+
+resources:
+  jobs:
+    ecommerce_daily:
+      name: ecommerce_daily
+
+      schedule:
+        quartz_cron_expression: "0 30 6 * * ?"   # 06:30 every day
+        timezone_id: Asia/Kolkata
+        pause_status: UNPAUSED
+
+      tasks:
+        - task_key: generate_raw_data
+          notebook_task:
+            notebook_path: ../src/data_generator/generate_data.py
+            base_parameters:
+              landing_path: /Volumes/${var.catalog}/${resources.schemas.ecommerce.name}/${resources.volumes.landing.name}
+              num_orders: "300"
+              num_events: "3000"
+
+        - task_key: refresh_lakehouse
+          depends_on:
+            - task_key: generate_raw_data
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.ecommerce_lakehouse.id}
